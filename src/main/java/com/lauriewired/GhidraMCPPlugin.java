@@ -1,31 +1,30 @@
 package com.lauriewired;
 
-import ghidra.framework.plugintool.Plugin;
-import ghidra.framework.plugintool.PluginTool;
-import ghidra.program.model.address.Address;
-import ghidra.program.model.address.GlobalNamespace;
-import ghidra.program.model.listing.*;
-import ghidra.program.model.mem.MemoryBlock;
-import ghidra.program.model.symbol.*;
-import ghidra.program.model.pcode.HighFunction;
-import ghidra.program.model.pcode.HighSymbol;
-import ghidra.program.model.pcode.LocalSymbolMap;
-import ghidra.program.model.pcode.HighFunctionDBUtil;
-import ghidra.program.model.pcode.HighFunctionDBUtil.ReturnCommitOption;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 import ghidra.app.decompiler.DecompInterface;
 import ghidra.app.decompiler.DecompileResults;
 import ghidra.app.plugin.PluginCategoryNames;
 import ghidra.app.services.ProgramManager;
 import ghidra.framework.options.Options;
+import ghidra.framework.plugintool.Plugin;
 import ghidra.framework.plugintool.PluginInfo;
+import ghidra.framework.plugintool.PluginTool;
 import ghidra.framework.plugintool.util.PluginStatus;
+import ghidra.program.model.address.Address;
+import ghidra.program.model.address.GlobalNamespace;
+import ghidra.program.model.listing.*;
+import ghidra.program.model.mem.MemoryBlock;
+import ghidra.program.model.pcode.HighFunction;
+import ghidra.program.model.pcode.HighFunctionDBUtil;
+import ghidra.program.model.pcode.HighFunctionDBUtil.ReturnCommitOption;
+import ghidra.program.model.pcode.HighSymbol;
+import ghidra.program.model.pcode.LocalSymbolMap;
+import ghidra.program.model.symbol.*;
 import ghidra.util.Msg;
 import ghidra.util.task.ConsoleTaskMonitor;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpServer;
-
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -35,11 +34,11 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @PluginInfo(
-    status = PluginStatus.RELEASED,
-    packageName = ghidra.app.DeveloperPluginPackage.NAME,
-    category = PluginCategoryNames.ANALYSIS,
-    shortDescription = "HTTP server plugin",
-    description = "Starts an embedded HTTP server to expose program data. Port configurable via Tool Options."
+        status = PluginStatus.RELEASED,
+        packageName = ghidra.app.DeveloperPluginPackage.NAME,
+        category = PluginCategoryNames.ANALYSIS,
+        shortDescription = "HTTP server plugin",
+        description = "Starts an embedded HTTP server to expose program data. Port configurable via Tool Options."
 )
 public class GhidraMCPPlugin extends Plugin {
 
@@ -55,14 +54,13 @@ public class GhidraMCPPlugin extends Plugin {
         // Register the configuration option
         Options options = tool.getOptions(OPTION_CATEGORY_NAME);
         options.registerOption(PORT_OPTION_NAME, DEFAULT_PORT,
-            null, // No help location for now
-            "The network port number the embedded HTTP server will listen on. " +
-            "Requires Ghidra restart or plugin reload to take effect after changing.");
+                null, // No help location for now
+                "The network port number the embedded HTTP server will listen on. " +
+                        "Requires Ghidra restart or plugin reload to take effect after changing.");
 
         try {
             startServer();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Msg.error(this, "Failed to start HTTP server", e);
         }
         Msg.info(this, "GhidraMCPPlugin loaded!");
@@ -86,14 +84,14 @@ public class GhidraMCPPlugin extends Plugin {
         server.createContext("/methods", exchange -> {
             Map<String, String> qparams = parseQueryParams(exchange);
             int offset = parseIntOrDefault(qparams.get("offset"), 0);
-            int limit  = parseIntOrDefault(qparams.get("limit"),  100);
+            int limit = parseIntOrDefault(qparams.get("limit"), 100);
             sendResponse(exchange, getAllFunctionNames(offset, limit));
         });
 
         server.createContext("/classes", exchange -> {
             Map<String, String> qparams = parseQueryParams(exchange);
             int offset = parseIntOrDefault(qparams.get("offset"), 0);
-            int limit  = parseIntOrDefault(qparams.get("limit"),  100);
+            int limit = parseIntOrDefault(qparams.get("limit"), 100);
             sendResponse(exchange, getAllClassNames(offset, limit));
         });
 
@@ -127,35 +125,35 @@ public class GhidraMCPPlugin extends Plugin {
         server.createContext("/segments", exchange -> {
             Map<String, String> qparams = parseQueryParams(exchange);
             int offset = parseIntOrDefault(qparams.get("offset"), 0);
-            int limit  = parseIntOrDefault(qparams.get("limit"),  100);
+            int limit = parseIntOrDefault(qparams.get("limit"), 100);
             sendResponse(exchange, listSegments(offset, limit));
         });
 
         server.createContext("/imports", exchange -> {
             Map<String, String> qparams = parseQueryParams(exchange);
             int offset = parseIntOrDefault(qparams.get("offset"), 0);
-            int limit  = parseIntOrDefault(qparams.get("limit"),  100);
+            int limit = parseIntOrDefault(qparams.get("limit"), 100);
             sendResponse(exchange, listImports(offset, limit));
         });
 
         server.createContext("/exports", exchange -> {
             Map<String, String> qparams = parseQueryParams(exchange);
             int offset = parseIntOrDefault(qparams.get("offset"), 0);
-            int limit  = parseIntOrDefault(qparams.get("limit"),  100);
+            int limit = parseIntOrDefault(qparams.get("limit"), 100);
             sendResponse(exchange, listExports(offset, limit));
         });
 
         server.createContext("/namespaces", exchange -> {
             Map<String, String> qparams = parseQueryParams(exchange);
             int offset = parseIntOrDefault(qparams.get("offset"), 0);
-            int limit  = parseIntOrDefault(qparams.get("limit"),  100);
+            int limit = parseIntOrDefault(qparams.get("limit"), 100);
             sendResponse(exchange, listNamespaces(offset, limit));
         });
 
         server.createContext("/data", exchange -> {
             Map<String, String> qparams = parseQueryParams(exchange);
             int offset = parseIntOrDefault(qparams.get("offset"), 0);
-            int limit  = parseIntOrDefault(qparams.get("limit"),  100);
+            int limit = parseIntOrDefault(qparams.get("limit"), 100);
             sendResponse(exchange, listDefinedData(offset, limit));
         });
 
@@ -277,12 +275,12 @@ public class GhidraMCPPlugin extends Plugin {
             while (it.hasNext()) {
                 Data data = it.next();
                 if (block.contains(data.getAddress())) {
-                    String label   = data.getLabel() != null ? data.getLabel() : "(unnamed)";
+                    String label = data.getLabel() != null ? data.getLabel() : "(unnamed)";
                     String valRepr = data.getDefaultValueRepresentation();
                     lines.add(String.format("%s: %s = %s",
-                        data.getAddress(),
-                        escapeNonAscii(label),
-                        escapeNonAscii(valRepr)
+                            data.getAddress(),
+                            escapeNonAscii(label),
+                            escapeNonAscii(valRepr)
                     ));
                 }
             }
@@ -294,7 +292,7 @@ public class GhidraMCPPlugin extends Plugin {
         Program program = getCurrentProgram();
         if (program == null) return "No program loaded";
         if (searchTerm == null || searchTerm.isEmpty()) return "Search term is required";
-    
+
         List<String> matches = new ArrayList<>();
         for (Function func : program.getFunctionManager().getFunctions(true)) {
             String name = func.getName();
@@ -303,14 +301,14 @@ public class GhidraMCPPlugin extends Plugin {
                 matches.add(String.format("%s @ %s", name, func.getEntryPoint()));
             }
         }
-    
+
         Collections.sort(matches);
-    
+
         if (matches.isEmpty()) {
             return "No functions matching '" + searchTerm + "'";
         }
         return paginateList(matches, offset, limit);
-    }    
+    }
 
     // ----------------------------------------------------------------------------------
     // Logic for rename, decompile, etc.
@@ -324,7 +322,7 @@ public class GhidraMCPPlugin extends Plugin {
         for (Function func : program.getFunctionManager().getFunctions(true)) {
             if (func.getName().equals(name)) {
                 DecompileResults result =
-                    decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
+                        decomp.decompileFunction(func, 30, new ConsoleTaskMonitor());
                 if (result != null && result.decompileCompleted()) {
                     return result.getDecompiledFunction().getC();
                 } else {
@@ -351,16 +349,13 @@ public class GhidraMCPPlugin extends Plugin {
                             break;
                         }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Msg.error(this, "Error renaming function", e);
-                }
-                finally {
+                } finally {
                     program.endTransaction(tx, successFlag.get());
                 }
             });
-        }
-        catch (InterruptedException | InvocationTargetException e) {
+        } catch (InterruptedException | InvocationTargetException e) {
             Msg.error(this, "Failed to execute rename on Swing thread", e);
         }
         return successFlag.get();
@@ -386,16 +381,13 @@ public class GhidraMCPPlugin extends Plugin {
                             symTable.createLabel(addr, newName, SourceType.USER_DEFINED);
                         }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Msg.error(this, "Rename data error", e);
-                }
-                finally {
+                } finally {
                     program.endTransaction(tx, true);
                 }
             });
-        }
-        catch (InterruptedException | InvocationTargetException e) {
+        } catch (InterruptedException | InvocationTargetException e) {
             Msg.error(this, "Failed to execute rename data on Swing thread", e);
         }
     }
@@ -439,7 +431,7 @@ public class GhidraMCPPlugin extends Plugin {
         while (symbols.hasNext()) {
             HighSymbol symbol = symbols.next();
             String symbolName = symbol.getName();
-            
+
             if (symbolName.equals(oldVarName)) {
                 highSymbol = symbol;
             }
@@ -459,25 +451,23 @@ public class GhidraMCPPlugin extends Plugin {
         AtomicBoolean successFlag = new AtomicBoolean(false);
 
         try {
-            SwingUtilities.invokeAndWait(() -> {           
+            SwingUtilities.invokeAndWait(() -> {
                 int tx = program.startTransaction("Rename variable");
                 try {
                     if (commitRequired) {
                         HighFunctionDBUtil.commitParamsToDatabase(highFunction, false,
-                            ReturnCommitOption.NO_COMMIT, finalFunction.getSignatureSource());
+                                ReturnCommitOption.NO_COMMIT, finalFunction.getSignatureSource());
                     }
                     HighFunctionDBUtil.updateDBVariable(
-                        finalHighSymbol,
-                        newVarName,
-                        null,
-                        SourceType.USER_DEFINED
+                            finalHighSymbol,
+                            newVarName,
+                            null,
+                            SourceType.USER_DEFINED
                     );
                     successFlag.set(true);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Msg.error(this, "Failed to rename variable", e);
-                }
-                finally {
+                } finally {
                     program.endTransaction(tx, true);
                 }
             });
@@ -491,39 +481,40 @@ public class GhidraMCPPlugin extends Plugin {
 
     /**
      * Copied from AbstractDecompilerAction.checkFullCommit, it's protected.
-	 * Compare the given HighFunction's idea of the prototype with the Function's idea.
-	 * Return true if there is a difference. If a specific symbol is being changed,
-	 * it can be passed in to check whether or not the prototype is being affected.
-	 * @param highSymbol (if not null) is the symbol being modified
-	 * @param hfunction is the given HighFunction
-	 * @return true if there is a difference (and a full commit is required)
-	 */
-	protected static boolean checkFullCommit(HighSymbol highSymbol, HighFunction hfunction) {
-		if (highSymbol != null && !highSymbol.isParameter()) {
-			return false;
-		}
-		Function function = hfunction.getFunction();
-		Parameter[] parameters = function.getParameters();
-		LocalSymbolMap localSymbolMap = hfunction.getLocalSymbolMap();
-		int numParams = localSymbolMap.getNumParams();
-		if (numParams != parameters.length) {
-			return true;
-		}
+     * Compare the given HighFunction's idea of the prototype with the Function's idea.
+     * Return true if there is a difference. If a specific symbol is being changed,
+     * it can be passed in to check whether or not the prototype is being affected.
+     *
+     * @param highSymbol (if not null) is the symbol being modified
+     * @param hfunction  is the given HighFunction
+     * @return true if there is a difference (and a full commit is required)
+     */
+    protected static boolean checkFullCommit(HighSymbol highSymbol, HighFunction hfunction) {
+        if (highSymbol != null && !highSymbol.isParameter()) {
+            return false;
+        }
+        Function function = hfunction.getFunction();
+        Parameter[] parameters = function.getParameters();
+        LocalSymbolMap localSymbolMap = hfunction.getLocalSymbolMap();
+        int numParams = localSymbolMap.getNumParams();
+        if (numParams != parameters.length) {
+            return true;
+        }
 
-		for (int i = 0; i < numParams; i++) {
-			HighSymbol param = localSymbolMap.getParamSymbol(i);
-			if (param.getCategoryIndex() != i) {
-				return true;
-			}
-			VariableStorage storage = param.getStorage();
-			// Don't compare using the equals method so that DynamicVariableStorage can match
-			if (0 != storage.compareTo(parameters[i].getVariableStorage())) {
-				return true;
-			}
-		}
+        for (int i = 0; i < numParams; i++) {
+            HighSymbol param = localSymbolMap.getParamSymbol(i);
+            if (param.getCategoryIndex() != i) {
+                return true;
+            }
+            VariableStorage storage = param.getStorage();
+            // Don't compare using the equals method so that DynamicVariableStorage can match
+            if (0 != storage.compareTo(parameters[i].getVariableStorage())) {
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
     // ----------------------------------------------------------------------------------
     // Utility: parse query params, parse post params, pagination, etc.
@@ -568,7 +559,7 @@ public class GhidraMCPPlugin extends Plugin {
      */
     private String paginateList(List<String> items, int offset, int limit) {
         int start = Math.max(0, offset);
-        int end   = Math.min(items.size(), offset + limit);
+        int end = Math.min(items.size(), offset + limit);
 
         if (start >= items.size()) {
             return ""; // no items in range
@@ -584,8 +575,7 @@ public class GhidraMCPPlugin extends Plugin {
         if (val == null) return defaultValue;
         try {
             return Integer.parseInt(val);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -599,8 +589,7 @@ public class GhidraMCPPlugin extends Plugin {
         for (char c : input.toCharArray()) {
             if (c >= 32 && c < 127) {
                 sb.append(c);
-            }
-            else {
+            } else {
                 sb.append("\\x");
                 sb.append(Integer.toHexString(c & 0xFF));
             }
